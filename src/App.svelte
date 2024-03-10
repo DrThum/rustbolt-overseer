@@ -25,32 +25,32 @@
     [38.4, -122.5795],
   ];
 
-  // L.TileLayer.WoWMinimap = L.TileLayer.extend({
-  //   getTileUrl: function (coords) {
-  //     // return "/maps/Azeroth/Azeroth_map36_36.png";
-  //     return L.TileLayer.prototype.getTileUrl.call(
-  //       this,
-  //       "/maps/Azeroth/Azeroth_map{x}_{y}.png",
-  //     );
-  //   },
-  // });
+  L.TileLayer.WoWMinimap = L.TileLayer.extend({
+    getTileUrl: function (coords) {
+      coords.x = -coords.x;
+      coords.y = -coords.y;
+      return L.TileLayer.prototype.getTileUrl.call(this, coords);
+    },
+  });
 
-  // L.tileLayer.wowMinimap = function () {
-  //   return new L.TileLayer.WoWMinimap();
-  // };
+  L.tileLayer.wowMinimap = function (templateUrl, options) {
+    return new L.TileLayer.WoWMinimap(templateUrl, options);
+  };
 
   function createMap(container) {
     let m = L.map(container, { preferCanvas: true, crs: L.CRS.Simple }).setView(
-      [-10000, 10000],
+      [0, 0],
       0,
     );
 
-    L.tileLayer("/maps/Azeroth/Azeroth_map{x}_{y}.png", {
-      minZoom: -3,
-      maxZoom: 3,
-      minNativeZoom: 0,
-      maxNativeZoom: 0,
-    }).addTo(m);
+    L.tileLayer
+      .wowMinimap("/maps/Azeroth/Azeroth_{x}_{y}.png", {
+        minZoom: -3,
+        maxZoom: 3,
+        minNativeZoom: 0,
+        maxNativeZoom: 0,
+      })
+      .addTo(m);
 
     return m;
   }

@@ -14,6 +14,7 @@
   import MarkerPopup from "./lib/MarkerPopup.svelte";
   import * as markerIcons from "./lib/markers.js";
   let map;
+  let mapMetadata;
 
   const markerLocations = [
     [29.8283, -96.5795],
@@ -27,8 +28,8 @@
 
   L.TileLayer.WoWMinimap = L.TileLayer.extend({
     getTileUrl: function (coords) {
-      coords.x = -coords.x;
-      coords.y = -coords.y;
+      coords.x += 32;
+      coords.y += 32;
       return L.TileLayer.prototype.getTileUrl.call(this, coords);
     },
   });
@@ -36,6 +37,12 @@
   L.tileLayer.wowMinimap = function (templateUrl, options) {
     return new L.TileLayer.WoWMinimap(templateUrl, options);
   };
+
+  async function fetchMapMetadata() {
+    const metadataResponse = await fetch("/maps/Azeroth/Azeroth.metadata.json");
+    const metadata = await metadataResponse.json();
+    return metadata;
+  }
 
   function createMap(container) {
     let m = L.map(container, { preferCanvas: true, crs: L.CRS.Simple }).setView(
@@ -45,12 +52,31 @@
 
     L.tileLayer
       .wowMinimap("/maps/Azeroth/Azeroth_{x}_{y}.png", {
-        minZoom: -3,
+        minZoom: -1,
         maxZoom: 3,
         minNativeZoom: 0,
         maxNativeZoom: 0,
       })
       .addTo(m);
+
+    /// DEBUG
+    L.GridLayer.GridDebug = L.GridLayer.extend({
+      createTile: function (coords) {
+        const tile = document.createElement("div");
+        tile.style.outline = "1px solid green";
+        tile.style.fontWeight = "bold";
+        tile.style.fontSize = "14pt";
+        tile.innerHTML = [coords.x, coords.y].join(",");
+        return tile;
+      },
+    });
+
+    L.gridLayer.gridDebug = function (opts) {
+      return new L.GridLayer.GridDebug(opts);
+    };
+
+    m.addLayer(L.gridLayer.gridDebug());
+    // END DEBUG
 
     return m;
   }
@@ -144,7 +170,9 @@
 
   let markerLayers;
   let lineLayers;
-  function mapAction(container) {
+  async function mapAction(container) {
+    mapMetadata = await fetchMapMetadata();
+
     map = createMap(container);
     toolbar.addTo(map);
 

@@ -80,7 +80,7 @@
     };
 
     // @ts-expect-error
-    gridLayer = L.gridLayer.gridDebug();
+    gridLayer = L.gridLayer.gridDebug({ minNativeZoom: 0, maxNativeZoom: 0 });
     // END DEBUG
 
     return m;

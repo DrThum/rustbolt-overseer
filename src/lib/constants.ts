@@ -2,3 +2,7 @@
 export const BLOCK_IN_YARDS = 533.33333;
 // Block width on the map, in pixels
 export const BLOCK_IN_PIXELS = 256;
+
+export enum UIEvent {
+  toggleGrid = "toggle-grid",
+}

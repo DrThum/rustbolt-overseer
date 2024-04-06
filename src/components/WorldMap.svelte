@@ -5,19 +5,25 @@
 	*/
 
   import L, {
+    GridLayer,
     LayerGroup,
     type Coords,
     type GridLayerOptions,
     type TileLayerOptions,
   } from "leaflet";
+
+  import MapToolbar from "./MapToolbar.svelte";
   import MarkerPopup from "../lib/MarkerPopup.svelte";
 
   import { type MapSpawn } from "../types/common.types";
   import { fetchMapMetadata, fetchSpawns } from "../services/map.service";
+  import { UIEvent } from "../lib/constants";
 
   let map: L.Map | null;
   let mapMetadata;
   let spawns = [];
+
+  let gridLayer: GridLayer;
 
   // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
   L.TileLayer.WoWMinimap = L.TileLayer.extend({
@@ -74,7 +80,7 @@
     };
 
     // @ts-expect-error
-    m.addLayer(L.gridLayer.gridDebug());
+    gridLayer = L.gridLayer.gridDebug();
     // END DEBUG
 
     return m;
@@ -127,22 +133,51 @@
     spawns = await fetchSpawns();
 
     map = createMap(container);
+    toolbar.addTo(map);
 
     markerLayers = L.layerGroup();
     for (const spawn of spawns) {
-      const m = createMarker(spawn);
-      markerLayers.addLayer(m);
+      const marker = createMarker(spawn);
+      markerLayers.addLayer(marker);
     }
 
     markerLayers.addTo(map);
 
     return {
       destroy: () => {
+        toolbar.remove();
         map?.remove();
         map = null;
       },
     };
   }
+
+  let toolbar = new L.Control({ position: "topright" });
+  let toolbarComponent: MapToolbar | null;
+  toolbar.onAdd = (map: L.Map) => {
+    let div = L.DomUtil.create("div");
+    toolbarComponent = new MapToolbar({
+      target: div,
+      props: {},
+    });
+
+    toolbarComponent.$on(UIEvent.toggleGrid, ({ detail }) => {
+      if (detail) {
+        map.addLayer(gridLayer);
+      } else {
+        map.removeLayer(gridLayer);
+      }
+    });
+
+    return div;
+  };
+
+  toolbar.onRemove = () => {
+    if (toolbarComponent) {
+      toolbarComponent.$destroy();
+      toolbarComponent = null;
+    }
+  };
 
   function resizeMap() {
     if (map) {
@@ -155,8 +190,8 @@
 
 <link
   rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
   crossorigin=""
 />
 <div class="map" style="height:100%;width:100%" use:mapAction />

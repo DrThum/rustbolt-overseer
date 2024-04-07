@@ -17,11 +17,11 @@
 
   import { type MapSpawn } from "../types/common.types";
   import { fetchMapMetadata, fetchSpawns } from "../services/map.service";
-  import { UIEvent } from "../lib/constants";
+  import { BLOCK_IN_PIXELS, BLOCK_IN_YARDS, UIEvent } from "../lib/constants";
 
   let map: L.Map | null;
   let mapMetadata;
-  let spawns = [];
+  let spawns: MapSpawn[] = [];
 
   let gridLayer: GridLayer;
 
@@ -83,6 +83,20 @@
     gridLayer = L.gridLayer.gridDebug({ minNativeZoom: 0, maxNativeZoom: 0 });
     // END DEBUG
 
+    m.on("moveend", async function () {
+      const bounds = m.getBounds();
+      spawns = await fetchSpawns(
+        {
+          x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+          y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        },
+        {
+          x: (bounds.getNorthEast().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+          y: (-bounds.getNorthEast().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        },
+      );
+    });
+
     return m;
   }
 
@@ -129,19 +143,24 @@
 
   let markerLayers: LayerGroup;
   async function mapAction(container: HTMLElement) {
-    mapMetadata = await fetchMapMetadata();
-    spawns = await fetchSpawns();
-
     map = createMap(container);
     toolbar.addTo(map);
 
     markerLayers = L.layerGroup();
-    for (const spawn of spawns) {
-      const marker = createMarker(spawn);
-      markerLayers.addLayer(marker);
-    }
-
     markerLayers.addTo(map);
+
+    const bounds = map.getBounds();
+    mapMetadata = await fetchMapMetadata();
+    spawns = await fetchSpawns(
+      {
+        x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+      },
+      {
+        x: (bounds.getNorthEast().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        y: (-bounds.getNorthEast().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+      },
+    );
 
     return {
       destroy: () => {
@@ -182,6 +201,19 @@
   function resizeMap() {
     if (map) {
       map.invalidateSize();
+    }
+  }
+
+  $: if (map && markerLayers && spawns) {
+    // Clear existing spawns
+    markerLayers.eachLayer((layer) => {
+      markerLayers.removeLayer(layer);
+    });
+
+    // Add new spawns
+    for (const spawn of spawns) {
+      const marker = createMarker(spawn);
+      markerLayers.addLayer(marker);
     }
   }
 </script>

@@ -1,5 +1,5 @@
 import { serverSpawnToMapSpawn } from "../models/spawn.model";
-import type { MapSpawn, ServerSpawn } from "../types/common.types";
+import type { MapSpawn, Point, ServerSpawn } from "../types/common.types";
 
 export async function fetchMapMetadata() {
   const metadataResponse = await fetch("/maps/Azeroth/Azeroth.metadata.json");
@@ -7,8 +7,13 @@ export async function fetchMapMetadata() {
   return metadata;
 }
 
-export async function fetchSpawns(): Promise<MapSpawn[]> {
-  const spawnsResponse = await fetch("http://localhost:8080/");
+export async function fetchSpawns(
+  southWest: Point,
+  northEast: Point,
+): Promise<MapSpawn[]> {
+  const spawnsResponse = await fetch(
+    `http://localhost:8080/?south_west=${southWest.x},${southWest.y}&north_east=${northEast.x},${northEast.y}`,
+  );
   const spawns: ServerSpawn[] = await spawnsResponse.json();
   return spawns.map(serverSpawnToMapSpawn);
 }

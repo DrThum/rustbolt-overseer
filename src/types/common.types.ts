@@ -13,3 +13,8 @@ export type MapSpawn = {
   loc: [number, number]; // [x,y]
   name: string;
 };
+
+export type Point = {
+  x: number;
+  y: number;
+};

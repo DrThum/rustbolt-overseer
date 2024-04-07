@@ -210,14 +210,18 @@
 
   $: if (map && markerLayers && spawns) {
     // Clear existing spawns
+    // @ts-expect-error
     markerLayers.eachLayer((layer) => {
       markerLayers.removeLayer(layer);
     });
 
-    // Add new spawns
-    for (const spawn of spawns) {
-      const marker = createMarker(spawn);
-      markerLayers.addLayer(marker);
+    // Don't show spawns at zoom level -1, it lags and isn't that relevant
+    if (map.getZoom() >= 0) {
+      // Add new spawns
+      for (const spawn of spawns) {
+        const marker = createMarker(spawn);
+        markerLayers.addLayer(marker);
+      }
     }
   }
 </script>

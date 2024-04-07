@@ -6,11 +6,12 @@
 
   import L, {
     GridLayer,
-    LayerGroup,
     type Coords,
     type GridLayerOptions,
     type TileLayerOptions,
   } from "leaflet";
+  // @ts-expect-error no type declaration
+  import MarkerClusterGroup from "leaflet.markercluster";
 
   import MapToolbar from "./MapToolbar.svelte";
   import MarkerPopup from "../lib/MarkerPopup.svelte";
@@ -141,12 +142,15 @@
     return marker;
   }
 
-  let markerLayers: LayerGroup;
+  let markerLayers: MarkerClusterGroup;
   async function mapAction(container: HTMLElement) {
     map = createMap(container);
     toolbar.addTo(map);
 
-    markerLayers = L.layerGroup();
+    // @ts-expect-error
+    markerLayers = L.markerClusterGroup({
+      disableClusteringAtZoom: 2,
+    });
     markerLayers.addTo(map);
 
     const bounds = map.getBounds();
@@ -226,6 +230,17 @@
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
   crossorigin=""
 />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+  crossorigin=""
+/>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+  crossorigin=""
+/>
+
 <div class="map" style="height:100%;width:100%" use:mapAction />
 
 <style>

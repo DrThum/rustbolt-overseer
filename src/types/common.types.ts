@@ -18,3 +18,12 @@ export type Point = {
   x: number;
   y: number;
 };
+
+export type WoWMap = {
+  id: number;
+  name: string;
+  entryPoint: {
+    x: number;
+    y: number;
+  };
+};

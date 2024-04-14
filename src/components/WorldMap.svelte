@@ -19,12 +19,15 @@
 
   import { type MapSpawn } from "../types/common.types";
   import { fetchMapMetadata, fetchSpawns } from "../services/map.service";
-  import { BLOCK_IN_PIXELS, BLOCK_IN_YARDS, UIEvent } from "../lib/constants";
-
-  import * as mapList from "../assets/maps.json";
+  import {
+    BLOCK_IN_PIXELS,
+    BLOCK_IN_YARDS,
+    UIEvent,
+    wowMaps,
+  } from "../lib/constants";
 
   let map: L.Map | null;
-  let currentWowMap = { id: 0, name: "Azeroth" };
+  let currentWowMap = wowMaps["Azeroth"];
   let mapMetadata;
   let spawns: MapSpawn[] = [];
 
@@ -55,9 +58,8 @@
     onAdd: function (map: L.Map) {
       const select = L.DomUtil.create("select") as HTMLSelectElement;
 
-      // @ts-expect-error
-      for (const [mapName, { id: mapId }] of Object.entries(mapList)) {
-        const option = new Option(mapName, mapId);
+      for (const [mapName, wowMap] of Object.entries(wowMaps)) {
+        const option = new Option(wowMap.name, wowMap.id.toString());
         L.DomEvent.on(option, "click", (_ev) => {
           map.removeLayer(mapLayer);
           mapLayer = L.tileLayer
@@ -70,9 +72,8 @@
             })
             .addTo(map);
 
-          const wowMap = mapList[mapName];
           map.panTo(new L.LatLng(wowMap.entryPoint.x, wowMap.entryPoint.y));
-          currentWowMap = { id: mapId, name: mapName };
+          currentWowMap = wowMap;
         });
         select.add(option);
       }
@@ -90,7 +91,7 @@
   // @ts-expect-error parameter 'container' implicitly has 'any' type
   function createMap(container) {
     let m = L.map(container, { preferCanvas: true, crs: L.CRS.Simple }).setView(
-      [0, 0],
+      [currentWowMap.entryPoint.x, currentWowMap.entryPoint.y],
       0,
     );
 
@@ -127,7 +128,7 @@
     gridLayer = L.gridLayer.gridDebug({ minNativeZoom: 0, maxNativeZoom: 0 });
     // END DEBUG
 
-    m.on("moveend", async function () {
+    m.on("dragend", async function () {
       const bounds = m.getBounds();
       spawns = await fetchSpawns(
         currentWowMap.id,
@@ -198,20 +199,6 @@
     });
     markerLayers.addTo(map);
 
-    const bounds = map.getBounds();
-    mapMetadata = await fetchMapMetadata(currentWowMap.name);
-    spawns = await fetchSpawns(
-      currentWowMap.id,
-      {
-        x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
-        y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
-      },
-      {
-        x: (bounds.getNorthEast().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
-        y: (-bounds.getNorthEast().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
-      },
-    );
-
     return {
       destroy: () => {
         toolbar.remove();
@@ -254,7 +241,23 @@
     }
   }
 
-  $: if (map && markerLayers && spawns && currentWowMap) {
+  $: if (map && currentWowMap) {
+    const bounds = map.getBounds();
+    fetchMapMetadata(currentWowMap.name).then((res) => (mapMetadata = res));
+    fetchSpawns(
+      currentWowMap.id,
+      {
+        x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+      },
+      {
+        x: (bounds.getNorthEast().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+        y: (-bounds.getNorthEast().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
+      },
+    ).then((res) => (spawns = res));
+  }
+
+  $: if (map && markerLayers && spawns) {
     // Clear existing spawns
     // @ts-expect-error
     markerLayers.eachLayer((layer) => {
@@ -264,10 +267,8 @@
     // Don't show spawns at zoom level -1, it lags and isn't that relevant
     if (map.getZoom() >= 0) {
       // Add new spawns
-      for (const spawn of spawns) {
-        const marker = createMarker(spawn);
-        markerLayers.addLayer(marker);
-      }
+      const markers = spawns.map((spawn) => createMarker(spawn));
+      markerLayers.addLayers(markers);
     }
   }
 </script>

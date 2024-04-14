@@ -6,6 +6,7 @@
 
   import L, {
     GridLayer,
+    type ControlOptions,
     type Coords,
     type GridLayerOptions,
     type TileLayerOptions,
@@ -20,11 +21,16 @@
   import { fetchMapMetadata, fetchSpawns } from "../services/map.service";
   import { BLOCK_IN_PIXELS, BLOCK_IN_YARDS, UIEvent } from "../lib/constants";
 
+  import * as mapList from "../assets/maps.json";
+
   let map: L.Map | null;
+  let currentWowMap = { id: 0, name: "Azeroth" };
   let mapMetadata;
   let spawns: MapSpawn[] = [];
 
   let gridLayer: GridLayer;
+  // @ts-expect-error
+  let mapLayer: typeof L.TileLayer.WoWMinimap;
 
   // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
   L.TileLayer.WoWMinimap = L.TileLayer.extend({
@@ -44,6 +50,43 @@
     return new L.TileLayer.WoWMinimap(templateUrl, options);
   };
 
+  // @ts-expect-error
+  L.Control.MapSelector = L.Control.extend({
+    onAdd: function (map: L.Map) {
+      const select = L.DomUtil.create("select") as HTMLSelectElement;
+
+      // @ts-expect-error
+      for (const [mapName, { id: mapId }] of Object.entries(mapList)) {
+        const option = new Option(mapName, mapId);
+        L.DomEvent.on(option, "click", (_ev) => {
+          map.removeLayer(mapLayer);
+          mapLayer = L.tileLayer
+            // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
+            .wowMinimap(`/maps/${mapName}/${mapName}_{x}_{y}.png`, {
+              minZoom: -1,
+              maxZoom: 3,
+              minNativeZoom: 0,
+              maxNativeZoom: 0,
+            })
+            .addTo(map);
+
+          const wowMap = mapList[mapName];
+          map.panTo(new L.LatLng(wowMap.entryPoint.x, wowMap.entryPoint.y));
+          currentWowMap = { id: mapId, name: mapName };
+        });
+        select.add(option);
+      }
+
+      return select;
+    },
+  });
+
+  // @ts-expect-error
+  L.control.mapSelector = function (options: ControlOptions) {
+    // @ts-expect-error
+    return new L.Control.MapSelector(options);
+  };
+
   // @ts-expect-error parameter 'container' implicitly has 'any' type
   function createMap(container) {
     let m = L.map(container, { preferCanvas: true, crs: L.CRS.Simple }).setView(
@@ -51,7 +94,7 @@
       0,
     );
 
-    L.tileLayer
+    mapLayer = L.tileLayer
       // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
       .wowMinimap("/maps/Azeroth/Azeroth_{x}_{y}.png", {
         minZoom: -1,
@@ -87,6 +130,7 @@
     m.on("moveend", async function () {
       const bounds = m.getBounds();
       spawns = await fetchSpawns(
+        currentWowMap.id,
         {
           x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
           y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
@@ -97,6 +141,9 @@
         },
       );
     });
+
+    // @ts-expect-error
+    L.control.mapSelector({ position: "topleft" }).addTo(m);
 
     return m;
   }
@@ -129,14 +176,12 @@
   function createMarker(spawn: MapSpawn) {
     let marker = L.marker(spawn.loc);
     bindPopup(marker, (el: HTMLElement) => {
-      let c = new MarkerPopup({
+      return new MarkerPopup({
         target: el,
         props: {
           name: spawn.name,
         },
       });
-
-      return c;
     });
 
     return marker;
@@ -154,8 +199,9 @@
     markerLayers.addTo(map);
 
     const bounds = map.getBounds();
-    mapMetadata = await fetchMapMetadata();
+    mapMetadata = await fetchMapMetadata(currentWowMap.name);
     spawns = await fetchSpawns(
+      currentWowMap.id,
       {
         x: (bounds.getSouthWest().lat / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
         y: (-bounds.getSouthWest().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
@@ -208,7 +254,7 @@
     }
   }
 
-  $: if (map && markerLayers && spawns) {
+  $: if (map && markerLayers && spawns && currentWowMap) {
     // Clear existing spawns
     // @ts-expect-error
     markerLayers.eachLayer((layer) => {

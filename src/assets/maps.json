@@ -1,0 +1,23 @@
+{
+  "Azeroth": {
+    "id": 0,
+    "entryPoint": {
+      "x": -4184.5,
+      "y": -336.5
+    }
+  },
+  "Kalimdor": {
+    "id": 1,
+    "entryPoint": {
+      "x": 738.5,
+      "y": 2113.5
+    }
+  },
+  "Expansion01": {
+    "id": 530,
+    "entryPoint": {
+      "x": -894.56,
+      "y": -2606.41
+    }
+  }
+}

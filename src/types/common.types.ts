@@ -12,6 +12,7 @@ export type ServerSpawn = {
 export type MapSpawn = {
   loc: [number, number]; // [x,y]
   name: string;
+  entry: number; // template entry
 };
 
 export type Point = {

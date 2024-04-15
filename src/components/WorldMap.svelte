@@ -25,6 +25,7 @@
     UIEvent,
     wowMaps,
   } from "../lib/constants";
+  import { editSpawnCreatureId } from "../stores/creatures.store";
 
   let map: L.Map | null;
   let currentWowMap = wowMaps["Azeroth"];
@@ -149,41 +150,10 @@
     return m;
   }
 
-  // Create a popup with a Svelte component inside it and handle removal when the popup is torn down.
-  // `createFn` will be called whenever the popup is being created, and should create and return the component.
-  function bindPopup(
-    marker: L.Marker,
-    createFn: (el: HTMLElement) => MarkerPopup,
-  ) {
-    let popupComponent: MarkerPopup | null;
-    marker.bindPopup(() => {
-      let container = L.DomUtil.create("div");
-      popupComponent = createFn(container);
-      return container;
-    });
-
-    marker.on("popupclose", () => {
-      if (popupComponent) {
-        let old = popupComponent;
-        popupComponent = null;
-        // Wait to destroy until after the fadeout completes.
-        setTimeout(() => {
-          old.$destroy();
-        }, 500);
-      }
-    });
-  }
-
   function createMarker(spawn: MapSpawn) {
-    let marker = L.marker(spawn.loc);
-    bindPopup(marker, (el: HTMLElement) => {
-      return new MarkerPopup({
-        target: el,
-        props: {
-          name: spawn.name,
-        },
-      });
-    });
+    let marker = L.marker(spawn.loc).on("click", () =>
+      editSpawnCreatureId.set(spawn.entry),
+    );
 
     return marker;
   }

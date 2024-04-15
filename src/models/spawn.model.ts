@@ -10,5 +10,6 @@ export function serverSpawnToMapSpawn(serverSpawn: ServerSpawn): MapSpawn {
       (-serverSpawn.position_y / BLOCK_IN_YARDS) * BLOCK_IN_PIXELS,
     ],
     name: serverSpawn.name,
+    entry: serverSpawn.entry,
   };
 }

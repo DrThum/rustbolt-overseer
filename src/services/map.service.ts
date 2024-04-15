@@ -15,7 +15,7 @@ export async function fetchSpawns(
   northEast: Point,
 ): Promise<MapSpawn[]> {
   const spawnsResponse = await fetch(
-    `http://localhost:8080/?map_id=${mapId}&south_west=${southWest.x},${southWest.y}&north_east=${northEast.x},${northEast.y}`,
+    `http://localhost:8080/spawns?map_id=${mapId}&south_west=${southWest.x},${southWest.y}&north_east=${northEast.x},${northEast.y}`,
   );
   const spawns: ServerSpawn[] = await spawnsResponse.json();
   return spawns.map(serverSpawnToMapSpawn);

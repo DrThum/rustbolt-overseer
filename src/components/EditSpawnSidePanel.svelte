@@ -1,10 +1,17 @@
 <script lang="ts">
+  import { fetchTemplate } from "../services/map.service";
   import { editSpawnCreatureId } from "../stores/creatures.store";
+  import type { CreatureTemplate } from "../types/common.types";
 
   let showPanel = false;
+  let template: CreatureTemplate | undefined;
 
-  editSpawnCreatureId.subscribe((value) => {
+  editSpawnCreatureId.subscribe(async (value) => {
     showPanel = value !== undefined;
+
+    if (value !== undefined) {
+      template = await fetchTemplate(value);
+    }
   });
 
   function closePanel() {
@@ -15,7 +22,7 @@
 {#if showPanel}
   <div id="panel">
     <h1>
-      Creature template #{$editSpawnCreatureId}
+      {template?.name} ({$editSpawnCreatureId})
       <span on:click={closePanel}>X</span>
     </h1>
   </div>

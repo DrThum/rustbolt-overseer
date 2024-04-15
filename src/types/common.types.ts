@@ -28,3 +28,8 @@ export type WoWMap = {
     y: number;
   };
 };
+
+export type CreatureTemplate = {
+  entry: number;
+  name: string;
+};

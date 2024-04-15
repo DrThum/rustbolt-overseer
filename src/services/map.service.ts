@@ -1,5 +1,10 @@
 import { serverSpawnToMapSpawn } from "../models/spawn.model";
-import type { MapSpawn, Point, ServerSpawn } from "../types/common.types";
+import type {
+  CreatureTemplate,
+  MapSpawn,
+  Point,
+  ServerSpawn,
+} from "../types/common.types";
 
 export async function fetchMapMetadata(mapName: string) {
   const metadataResponse = await fetch(
@@ -19,4 +24,11 @@ export async function fetchSpawns(
   );
   const spawns: ServerSpawn[] = await spawnsResponse.json();
   return spawns.map(serverSpawnToMapSpawn);
+}
+
+export async function fetchTemplate(
+  entry: number,
+): Promise<CreatureTemplate | undefined> {
+  const response = await fetch(`http://localhost:8080/spawn/${entry}`);
+  return await response.json();
 }

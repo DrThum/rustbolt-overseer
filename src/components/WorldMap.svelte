@@ -15,7 +15,6 @@
   import MarkerClusterGroup from "leaflet.markercluster";
 
   import MapToolbar from "./MapToolbar.svelte";
-  import MarkerPopup from "../lib/MarkerPopup.svelte";
 
   import { type MapSpawn } from "../types/common.types";
   import { fetchMapMetadata, fetchSpawns } from "../services/map.service";
@@ -31,10 +30,34 @@
   let currentWowMap = wowMaps["Azeroth"];
   let mapMetadata;
   let spawns: MapSpawn[] = [];
+  let lastClickedMarker: L.Marker | undefined = undefined;
 
   let gridLayer: GridLayer;
   // @ts-expect-error
   let mapLayer: typeof L.TileLayer.WoWMinimap;
+
+  const markerIcons = {
+    regular: new L.Icon({
+      iconUrl:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+      shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    }),
+    highlight: new L.Icon({
+      iconUrl:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+      shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    }),
+  };
 
   // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
   L.TileLayer.WoWMinimap = L.TileLayer.extend({
@@ -151,8 +174,18 @@
   }
 
   function createMarker(spawn: MapSpawn) {
-    let marker = L.marker(spawn.loc).on("click", () =>
-      editSpawnCreatureId.set(spawn.entry),
+    let marker = L.marker(spawn.loc, { icon: markerIcons.regular }).on(
+      "click",
+      (ev) => {
+        editSpawnCreatureId.set(spawn.entry);
+
+        if (lastClickedMarker) {
+          lastClickedMarker.setIcon(markerIcons.regular);
+        }
+
+        ev.target.setIcon(markerIcons.highlight);
+        lastClickedMarker = ev.target;
+      },
     );
 
     return marker;

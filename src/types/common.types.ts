@@ -32,4 +32,27 @@ export type WoWMap = {
 export type CreatureTemplate = {
   entry: number;
   name: string;
+  loot_table?: LootTable;
+};
+
+export type LootTable = {
+  id: number;
+  groups: LootGroup[];
+};
+
+export type LootGroup = {
+  chance: number;
+  num_rolls: ValueRange;
+  items: LootItem[];
+};
+
+export type LootItem = {
+  item_id: number;
+  chance: number;
+  count: ValueRange;
+};
+
+export type ValueRange = {
+  min: number;
+  max: number;
 };

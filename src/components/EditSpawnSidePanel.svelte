@@ -2,6 +2,7 @@
   import { fetchTemplate } from "../services/map.service";
   import { editSpawnCreatureId } from "../stores/creatures.store";
   import type { CreatureTemplate } from "../types/common.types";
+  import LootTable from "./LootTable.svelte";
 
   let showPanel = false;
   let template: CreatureTemplate | undefined;
@@ -25,6 +26,10 @@
       {template?.name} ({$editSpawnCreatureId})
       <span on:click={closePanel}>X</span>
     </h1>
+
+    {#if template?.loot_table}
+      <LootTable lootTable={template.loot_table} />
+    {/if}
   </div>
 {/if}
 

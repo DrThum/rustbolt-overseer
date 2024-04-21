@@ -27,8 +27,11 @@
       <span on:click={closePanel}>X</span>
     </h1>
 
-    {#if template?.loot_table}
-      <LootTable lootTable={template.loot_table} />
+    {#if template}
+      <LootTable
+        templateEntry={template.entry}
+        lootTable={template.loot_table}
+      />
     {/if}
   </div>
 {/if}

@@ -42,6 +42,7 @@ export type LootTable = {
 
 export type LootGroup = {
   chance: number;
+  condition_id: null;
   num_rolls: ValueRange;
   items: LootItem[];
 };
@@ -49,6 +50,7 @@ export type LootGroup = {
 export type LootItem = {
   item_id: number;
   chance: number;
+  condition_id: null;
   count: ValueRange;
 };
 

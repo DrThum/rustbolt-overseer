@@ -41,6 +41,7 @@ export type LootTable = {
 };
 
 export type LootGroup = {
+  id: number | undefined;
   chance: number;
   condition_id: null;
   num_rolls: ValueRange;

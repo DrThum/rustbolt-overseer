@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { LootTable, ValueRange } from "../types/common.types";
+  import { updateLootTable } from "../services/loot.service";
 
   export let templateEntry: number;
   export let lootTable: LootTable | undefined;
@@ -79,8 +80,12 @@
     lootTable = { id: templateEntry, groups: [] };
   }
 
-  function saveTable() {
-    console.log(lootTable);
+  async function saveTable() {
+    if (!lootTable) {
+      return;
+    }
+
+    lootTable = await updateLootTable(templateEntry, lootTable);
   }
 
   function removeGroupFromTable(groupIndex: number) {
@@ -93,7 +98,6 @@
   }
 
   function isTableValid(lootTable: LootTable) {
-    console.log("isTableValid", new Date());
     if (!lootTable) {
       return false;
     }
@@ -159,12 +163,7 @@
         <tr>
           {#if editingGroupIndex === groupIndex}
             <td colspan="3"
-              >Chance <input
-                type="number"
-                min="0"
-                max="100"
-                bind:value={chance}
-              /></td
+              ><input type="number" min="0" max="100" bind:value={chance} /></td
             >
           {:else}
             <td colspan="3">{chance}% chance of being selected</td>
@@ -180,9 +179,9 @@
         {#each items as { item_id, chance, count }}
           <tr>
             {#if editingGroupIndex === groupIndex}
-              <td>Item ID<input type="number" bind:value={item_id} /></td>
+              <td><input type="number" bind:value={item_id} /></td>
               <td
-                >Chance <input
+                ><input
                   type="number"
                   min="0"
                   max="100"

@@ -13,6 +13,7 @@ export const wowMaps: Record<string, WoWMap> = {
   Azeroth: {
     id: 0,
     name: "Azeroth",
+    key: "Azeroth",
     entryPoint: {
       x: -4184.5,
       y: -336.5,
@@ -21,6 +22,7 @@ export const wowMaps: Record<string, WoWMap> = {
   Kalimdor: {
     id: 1,
     name: "Kalimdor",
+    key: "Kalimdor",
     entryPoint: {
       x: 738.5,
       y: 2113.5,
@@ -29,9 +31,15 @@ export const wowMaps: Record<string, WoWMap> = {
   Expansion01: {
     id: 530,
     name: "Outland",
+    key: "Expansion01",
     entryPoint: {
       x: -894.56,
       y: -2606.41,
     },
   },
 };
+
+// Local storage keys
+export const LS_LAST_MAP_NAME = 'LS_LAST_MAP_NAME'; // string
+export const LS_LAST_COORDS = 'LS_LAST_COORDS'; // { x: number; y: number }
+export const LS_LAST_ZOOM_LEVEL = 'LS_LAST_ZOOM_LEVEL';

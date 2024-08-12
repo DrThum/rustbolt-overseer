@@ -23,11 +23,15 @@
     BLOCK_IN_YARDS,
     UIEvent,
     wowMaps,
+    LS_LAST_MAP_NAME,
+    LS_LAST_COORDS,
+    LS_LAST_ZOOM_LEVEL,
   } from "../lib/constants";
   import { editSpawnCreatureId } from "../stores/creatures.store";
 
   let map: L.Map | null;
-  let currentWowMap = wowMaps["Azeroth"];
+  let currentWowMap =
+    wowMaps[localStorage.getItem(LS_LAST_MAP_NAME) ?? "Azeroth"];
   let mapMetadata;
   let spawns: MapSpawn[] = [];
   let lastClickedMarker: L.Marker | undefined = undefined;
@@ -84,7 +88,13 @@
       const select = L.DomUtil.create("select") as HTMLSelectElement;
 
       for (const [mapName, wowMap] of Object.entries(wowMaps)) {
-        const option = new Option(wowMap.name, wowMap.id.toString());
+        const optionSelected = currentWowMap.name === wowMap.name;
+        const option = new Option(
+          wowMap.name,
+          wowMap.id.toString(),
+          optionSelected,
+          optionSelected,
+        );
         L.DomEvent.on(option, "click", (_ev) => {
           map.removeLayer(mapLayer);
           mapLayer = L.tileLayer
@@ -99,6 +109,7 @@
 
           map.panTo(new L.LatLng(wowMap.entryPoint.x, wowMap.entryPoint.y));
           currentWowMap = wowMap;
+          localStorage.setItem(LS_LAST_MAP_NAME, mapName);
         });
         select.add(option);
       }
@@ -115,19 +126,29 @@
 
   // @ts-expect-error parameter 'container' implicitly has 'any' type
   function createMap(container) {
+    let previousPositionRaw = localStorage.getItem(LS_LAST_COORDS);
+    let previousPosition = previousPositionRaw
+      ? JSON.parse(previousPositionRaw)
+      : undefined;
     let m = L.map(container, { preferCanvas: true, crs: L.CRS.Simple }).setView(
-      [currentWowMap.entryPoint.x, currentWowMap.entryPoint.y],
-      0,
+      [
+        previousPosition?.x ?? currentWowMap.entryPoint.x,
+        previousPosition?.y ?? currentWowMap.entryPoint.y,
+      ],
+      localStorage.getItem(LS_LAST_ZOOM_LEVEL) ?? 0,
     );
 
     mapLayer = L.tileLayer
       // @ts-expect-error property 'WoWMinimap' does not exist of type 'typeof TileLayer'
-      .wowMinimap("/maps/Azeroth/Azeroth_{x}_{y}.png", {
-        minZoom: -1,
-        maxZoom: 3,
-        minNativeZoom: 0,
-        maxNativeZoom: 0,
-      })
+      .wowMinimap(
+        `/maps/${currentWowMap.key}/${currentWowMap.key}_{x}_{y}.png`,
+        {
+          minZoom: -1,
+          maxZoom: 3,
+          minNativeZoom: 0,
+          maxNativeZoom: 0,
+        },
+      )
       .addTo(m);
 
     /// DEBUG
@@ -155,6 +176,13 @@
 
     m.on("dragend", async function () {
       const bounds = m.getBounds();
+      localStorage.setItem(
+        LS_LAST_COORDS,
+        JSON.stringify({
+          x: bounds.getCenter().lat,
+          y: bounds.getCenter().lng,
+        }),
+      );
       spawns = await fetchSpawns(
         currentWowMap.id,
         {
@@ -166,6 +194,10 @@
           y: (-bounds.getNorthEast().lng / BLOCK_IN_PIXELS) * BLOCK_IN_YARDS,
         },
       );
+    });
+
+    m.on("zoomend", function () {
+      localStorage.setItem(LS_LAST_ZOOM_LEVEL, m.getZoom());
     });
 
     // @ts-expect-error
@@ -247,6 +279,13 @@
 
   $: if (map && currentWowMap) {
     const bounds = map.getBounds();
+    localStorage.setItem(
+      LS_LAST_COORDS,
+      JSON.stringify({
+        x: bounds.getCenter().lat,
+        y: bounds.getCenter().lng,
+      }),
+    );
     fetchMapMetadata(currentWowMap.name).then((res) => (mapMetadata = res));
     fetchSpawns(
       currentWowMap.id,

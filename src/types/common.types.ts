@@ -23,6 +23,7 @@ export type Point = {
 export type WoWMap = {
   id: number;
   name: string;
+  key: string; // Technical name in DBC
   entryPoint: {
     x: number;
     y: number;

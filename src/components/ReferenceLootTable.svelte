@@ -5,11 +5,6 @@
   export let entityId: number;
   let referenceLootTable: Promise<ReferenceLootTable | undefined>;
 
-  // const referenceLootTable = fetchReferenceLootTable(
-  //   EntityType.Creature,
-  //   entityId,
-  // );
-
   $: if (entityId)
     referenceLootTable = fetchReferenceLootTable(EntityType.Creature, entityId);
 </script>
@@ -21,7 +16,8 @@
     {#if lootTable}
       {#each lootTable.items as item}
         <p>
-          <img src={item.icon_url} />{item.name} ({item.loot_percent_chance} %)
+          <img alt="item icon" src={item.icon_url} />{item.name}
+          ({item.loot_percent_chance} %)
         </p>
       {/each}
     {:else}

@@ -45,9 +45,9 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 50%;
+    width: 500px;
     z-index: 1000;
-    background-color: white;
+    background-color: var(--light);
     color: black;
     padding: 20px;
     overflow-y: scroll;

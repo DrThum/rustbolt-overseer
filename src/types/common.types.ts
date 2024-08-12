@@ -59,3 +59,21 @@ export type ValueRange = {
   min: number;
   max: number;
 };
+
+export enum EntityType {
+  Creature = "creature",
+  GameObject = "gameobject",
+}
+
+export type ReferenceLootTable = {
+  items: ReferenceLootItem[];
+}
+
+export type ReferenceLootItem = {
+  id: number;
+  icon_url: string;
+  name: string;
+  loot_percent_chance: number;
+  min_count?: number;
+  max_count?: number;
+}

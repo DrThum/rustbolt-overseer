@@ -3,6 +3,7 @@
   import { editSpawnCreatureId } from "../stores/creatures.store";
   import type { CreatureTemplate } from "../types/common.types";
   import LootTable from "./LootTable.svelte";
+  import ReferenceLootTable from "./ReferenceLootTable.svelte";
 
   let showPanel = false;
   let template: CreatureTemplate | undefined;
@@ -32,6 +33,8 @@
         templateEntry={template.entry}
         lootTable={template.loot_table}
       />
+
+      <ReferenceLootTable entityId={template.entry} />
     {/if}
   </div>
 {/if}
@@ -47,6 +50,7 @@
     background-color: white;
     color: black;
     padding: 20px;
+    overflow-y: scroll;
   }
 
   h1 {

@@ -36,6 +36,7 @@
   // @ts-expect-error
   let mapLayer: typeof L.TileLayer.WoWMinimap;
 
+  // https://github.com/pointhi/leaflet-color-markers
   const markerIcons = {
     regular: new L.Icon({
       iconUrl:

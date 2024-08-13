@@ -24,7 +24,12 @@
 {#if showPanel}
   <div id="panel">
     <h1>
-      {template?.name} ({$editSpawnCreatureId})
+      <a
+        class="external"
+        href="https://www.wowhead.com/tbc/npc={template?.entry}"
+        >{template?.name}
+        <span class="npc-entry">({$editSpawnCreatureId})</span></a
+      >
       <span on:click={closePanel}>X</span>
     </h1>
 
@@ -62,5 +67,22 @@
 
   h1 > span {
     cursor: pointer;
+  }
+
+  a.external::after {
+    content: "";
+    width: 0.7em;
+    height: 0.7em;
+    margin: 0 0.05em 0 0.1em;
+    background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2Ij48cGF0aCBkPSJNOSAyTDkgMyAxMi4zIDMgNiA5LjMgNi43IDEwIDEzIDMuNyAxMyA3IDE0IDcgMTQgMlpNNCA0QzIuOSA0IDIgNC45IDIgNkwyIDEyQzIgMTMuMSAyLjkgMTQgNCAxNEwxMCAxNEMxMS4xIDE0IDEyIDEzLjEgMTIgMTJMMTIgNyAxMSA4IDExIDEyQzExIDEyLjYgMTAuNiAxMyAxMCAxM0w0IDEzQzMuNCAxMyAzIDEyLjYgMyAxMkwzIDZDMyA1LjQgMy40IDUgNCA1TDggNSA5IDRaIi8+PC9zdmc+)
+      no-repeat;
+    background-size: contain;
+    display: inline-block;
+    vertical-align: text-top;
+  }
+
+  span.npc-entry {
+    font-size: 1rem;
+    vertical-align: super;
   }
 </style>

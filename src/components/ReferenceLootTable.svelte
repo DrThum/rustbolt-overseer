@@ -38,7 +38,7 @@
             >
             <td>
               <a
-                href="http://www.wowhead.com/tbc/item={item.id}"
+                href="https://www.wowhead.com/tbc/item={item.id}"
                 target="_blank">{item.name}</a
               >
             </td>

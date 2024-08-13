@@ -36,7 +36,12 @@
             <td class="item-icon"
               ><img class="item-icon" alt="item icon" src={item.icon_url} /></td
             >
-            <td>{item.name}</td>
+            <td>
+              <a
+                href="http://www.wowhead.com/tbc/item={item.id}"
+                target="_blank">{item.name}</a
+              >
+            </td>
             <td class="loot-percent-chance">{item.loot_percent_chance} %</td>
           </tr>
         {/each}

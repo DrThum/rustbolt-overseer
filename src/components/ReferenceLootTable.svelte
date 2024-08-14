@@ -33,14 +33,21 @@
       <table class="drops">
         {#each lootTable.items as item}
           <tr>
-            <td class="item-icon"
-              ><img class="item-icon" alt="item icon" src={item.icon_url} /></td
-            >
+            <td class="item-icon">
+              <img class="item-icon" alt="item icon" src={item.icon_url} />
+              {#if item.min_count}
+                <span class="item-counts"
+                  >{item.min_count}-{item.max_count}</span
+                >
+              {/if}
+            </td>
             <td>
               <a
                 href="https://www.wowhead.com/tbc/item={item.id}"
-                target="_blank">{item.name}</a
+                target="_blank"
               >
+                {item.name}
+              </a>
             </td>
             <td class="loot-percent-chance">{item.loot_percent_chance} %</td>
           </tr>
@@ -72,6 +79,25 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+  }
+
+  span.item-counts {
+    position: absolute;
+    right: 10px;
+    bottom: 2px;
+    color: var(--light);
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow:
+      1px 1px 0 #000,
+      0 1px 0 #000,
+      -1px 1px 0 #000,
+      -1px 0 0 #000,
+      -2px 0 #000,
+      -1px 0 #000,
+      0px 0 #000,
+      1px 0 0 #000;
   }
 
   td.loot-percent-chance {

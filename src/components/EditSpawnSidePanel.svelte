@@ -27,10 +27,11 @@
       <a
         class="external"
         href="https://www.wowhead.com/tbc/npc={template?.entry}"
+        target="_blank"
         >{template?.name}
         <span class="npc-entry">({$editSpawnCreatureId})</span></a
       >
-      <span on:click={closePanel}>X</span>
+      <button on:click={closePanel}>&#10006;</button>
     </h1>
 
     {#if template}
@@ -67,6 +68,10 @@
 
   h1 > span {
     cursor: pointer;
+  }
+
+  h1 button {
+    font-size: 14px;
   }
 
   a.external::after {

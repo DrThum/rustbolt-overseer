@@ -30,11 +30,16 @@
       lootTable = updatedLootTable;
     }
   }
+
+  function removeGroup(event: CustomEvent<{ index: number }>) {
+    lootTable.groups.splice(event.detail.index, 1);
+    lootTable.groups = lootTable.groups;
+  }
 </script>
 
 <div id="loot-table-edit-form">
-  {#each lootTable.groups as group}
-    <LootGroup {group} />
+  {#each lootTable.groups as group, index}
+    <LootGroup {group} {index} on:removeGroup={removeGroup} />
   {/each}
 
   <div class="btn-container">

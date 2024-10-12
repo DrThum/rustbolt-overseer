@@ -1,9 +1,13 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import type { LootGroup } from "../types/common.types";
-    import LootItem from "./LootItem.svelte";
+  import LootItem from "./LootItem.svelte";
+
+  const dispatch = createEventDispatcher();
 
   // TODO: Two display mode: compact (icon, count, percentage, side by side) and comfortable (icon, count, percentage, name, one per line)
   export let group: LootGroup | undefined;
+  export let index: number;
 
   function defaultToOne(dataTransfer: DataTransfer, attribute: string): number {
     let maybeNumber = parseInt(dataTransfer.getData(attribute));
@@ -37,10 +41,21 @@
 
     group.items = group.items;
   }
+
+  function removeGroup() {
+    dispatch('removeGroup', { index });
+  }
+
+  function removeItem(event: CustomEvent<{ itemId: number }>) {
+    if (group) {
+      group.items = group.items.filter((item) => item.item_id !== event.detail.itemId);
+    }
+  }
 </script>
 
 <div class="loot-group-wrapper">
   {#if group}
+    <button class="btn-remove-group" on:click={removeGroup}>&#10006;</button>
     <div class="metadata">
       <label>Chance </label>
       <input type="range" min="1" max="100" bind:value={group.chance} />
@@ -53,7 +68,7 @@
 
     <ul>
       {#each group.items as item}
-        <li><LootItem item={item}/></li>
+        <li><LootItem item={item} on:removeItem={removeItem}/></li>
       {/each}
     </ul>
   {/if}
@@ -70,6 +85,7 @@
 <style>
   .loot-group-wrapper {
     padding: 10px;
+    position: relative;
   }
 
   .loot-group-wrapper {
@@ -107,5 +123,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  .btn-remove-group {
+    position: absolute;
+    right: 10px;
   }
 </style>

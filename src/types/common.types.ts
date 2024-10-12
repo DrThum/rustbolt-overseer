@@ -37,12 +37,12 @@ export type CreatureTemplate = {
 };
 
 export type LootTable = {
-  id: number;
+  id?: number;
   groups: LootGroup[];
 };
 
 export type LootGroup = {
-  id: number | undefined;
+  id?: number;
   chance: number;
   condition_id: null;
   num_rolls: ValueRange;

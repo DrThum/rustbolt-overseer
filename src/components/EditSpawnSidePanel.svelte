@@ -2,7 +2,7 @@
   import { fetchTemplate } from "../services/map.service";
   import { editSpawnCreatureId } from "../stores/creatures.store";
   import type { CreatureTemplate } from "../types/common.types";
-  import LootTable from "./LootTable.svelte";
+  import LootTableEditForm from "./LootTableEditForm.svelte";
   import ReferenceLootTable from "./ReferenceLootTable.svelte";
 
   let showPanel = false;
@@ -18,6 +18,23 @@
 
   function closePanel() {
     editSpawnCreatureId.set(undefined);
+  }
+
+  function createEmptyLootTable() {
+    if (!template) {
+      return;
+    }
+
+    template.loot_table = {
+      groups: [
+{
+      chance: 100,
+      condition_id: null,
+      num_rolls: { min: 1, max: 1 },
+      items: [],
+    }
+      ],
+    };
   }
 </script>
 
@@ -35,10 +52,11 @@
     </h1>
 
     {#if template}
-      <LootTable
-        templateEntry={template.entry}
-        lootTable={template.loot_table}
-      />
+      {#if template.loot_table}
+        <LootTableEditForm entry={template?.entry} lootTable={template.loot_table} />
+      {:else}
+        <button on:click={createEmptyLootTable}>Initialize a loot table</button>
+      {/if}
 
       <ReferenceLootTable entityId={template.entry} />
     {/if}

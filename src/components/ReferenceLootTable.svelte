@@ -5,6 +5,33 @@
   export let entityId: number;
   let referenceLootTable: Promise<ReferenceLootTable | undefined>;
 
+  async function handleDragStart(e: DragEvent) {
+    if (!e.currentTarget) {
+      return;
+    }
+
+    const itemId = parseInt(
+      (<HTMLElement>e.currentTarget).getAttribute("item-id") as string,
+    );
+    const item = (await referenceLootTable)!.items.find(
+      (item) => item.id === itemId,
+    );
+
+    if (item) {
+      e.dataTransfer?.setData("itemId", item.id.toString());
+      e.dataTransfer?.setData(
+        "lootPercentChance",
+        item.loot_percent_chance.toString(),
+      );
+      if (item.min_count) {
+        e.dataTransfer?.setData("minCount", item.min_count?.toString() ?? "1");
+      }
+      if (item.max_count) {
+        e.dataTransfer?.setData("maxCount", item.max_count?.toString() ?? "1");
+      }
+    }
+  }
+
   $: if (entityId)
     referenceLootTable = fetchReferenceLootTable(
       EntityType.Creature,
@@ -34,12 +61,19 @@
         {#each lootTable.items as item}
           <tr>
             <td class="item-icon">
-              <img class="item-icon" alt="item icon" src={item.icon_url} />
-              {#if item.min_count}
-                <span class="item-counts"
-                  >{item.min_count}-{item.max_count}</span
-                >
-              {/if}
+              <div
+                class="item-icon-container"
+                draggable="true"
+                on:dragstart={handleDragStart}
+                item-id={item.id}
+              >
+                <img class="item-icon" alt="item icon" src={item.icon_url} />
+                {#if item.min_count}
+                  <span class="item-counts"
+                    >{item.min_count}-{item.max_count}</span
+                  >
+                {/if}
+              </div>
             </td>
             <td>
               <a
@@ -79,13 +113,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  div.item-icon-container {
     position: relative;
+  }
+
+  div.item-icon-container * {
+    cursor: grab;
   }
 
   span.item-counts {
     position: absolute;
-    right: 10px;
-    bottom: 2px;
+    right: 2px;
+    bottom: 4px;
     color: var(--light);
     font-size: 18px;
     font-weight: bold;

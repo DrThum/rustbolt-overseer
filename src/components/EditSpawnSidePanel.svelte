@@ -26,14 +26,12 @@
     }
 
     template.loot_table = {
-      groups: [
-{
-      chance: 100,
-      condition_id: null,
-      num_rolls: { min: 1, max: 1 },
-      items: [],
-    }
-      ],
+      groups: [{
+        chance: 100,
+        condition_id: null,
+        num_rolls: { min: 1, max: 1 },
+        items: [],
+      }],
     };
   }
 </script>
